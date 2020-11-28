@@ -1,13 +1,5 @@
 
 # coding: utf-8
-
-# In[ ]:
-
-
-''' DQN agent
-Code adapted from https://github.com/datamllab/rlcard/blob/master/rlcard/agents/dqn_agent_pytorch.py
-'''
-
 ''' DQN agent
 The code is derived from https://github.com/dennybritz/reinforcement-learning/blob/master/DQN/dqn.py
 Copyright (c) 2019 Matthew Judell
