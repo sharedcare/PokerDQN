@@ -1,4 +1,3 @@
-
 # coding: utf-8
 ''' DQN agent
 The code is derived from https://github.com/dennybritz/reinforcement-learning/blob/master/DQN/dqn.py
@@ -107,8 +106,8 @@ class DQNAgent(object):
         self.epsilons = np.linspace(epsilon_start, epsilon_end, epsilon_decay_steps)
 
         # Create estimators
-        self.q_estimator = Estimator(action_num=action_num, learning_rate=learning_rate, state_shape=state_shape,                                      mlp_layers=mlp_layers, device=self.device)
-        self.target_estimator = Estimator(action_num=action_num, learning_rate=learning_rate, state_shape=state_shape,                                           mlp_layers=mlp_layers, device=self.device)
+        self.q_estimator = Estimator(action_num=action_num, learning_rate=learning_rate, state_shape=state_shape, mlp_layers=mlp_layers, device=self.device)
+        self.target_estimator = Estimator(action_num=action_num, learning_rate=learning_rate, state_shape=state_shape, mlp_layers=mlp_layers, device=self.device)
 
         # Create replay memory
         self.memory = Memory(replay_memory_size, batch_size)
@@ -180,7 +179,7 @@ class DQNAgent(object):
 
         # Evaluate best next actions using Target-network (Double DQN)
         q_values_next_target = self.target_estimator.predict_nograd(next_state_batch)
-        target_batch = reward_batch + np.invert(done_batch).astype(np.float32) *                        self.discount_factor * q_values_next_target[np.arange(self.batch_size), best_actions]
+        target_batch = reward_batch + np.invert(done_batch).astype(np.float32) * self.discount_factor * q_values_next_target[np.arange(self.batch_size), best_actions]
 
         # Perform gradient descent update
         state_batch = np.array(state_batch)
@@ -343,7 +342,7 @@ class EstimatorNetwork(nn.Module):
         fc.append(nn.BatchNorm1d(layer_dims[0]))
         for i in range(len(layer_dims) - 1):
             fc.append(nn.Linear(layer_dims[i], layer_dims[i + 1], bias=True))
-            fc.append(nn.Tanh())
+            fc.append(nn.ReLU())
         fc.append(nn.Linear(layer_dims[-1], self.action_num, bias=True))
         self.fc_layers = nn.Sequential(*fc)
 
