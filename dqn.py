@@ -11,7 +11,7 @@ from rlcard.utils import set_global_seed, tournament
 from rlcard.utils import Logger
 
 # Make environment
-env = rlcard.make('no-limit-holdem', config={'seed': 0})
+env = rlcard.make('no-limit-holdem', config={'seed': 0, 'num_players': 4})
 eval_env = rlcard.make('no-limit-holdem', config={'seed': 0})
 
 # Set the iterations numbers and how frequently we evaluate the performance
