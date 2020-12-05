@@ -26,7 +26,7 @@ memory_init_size = 1000
 train_every = 1
 
 # The paths for saving the logs and learning curves
-log_dir = './experiments/dqn_result/'
+log_dir = './experiments/dqn_two_result/'
 
 # Set a global seed
 set_global_seed(0)
@@ -38,7 +38,7 @@ with tf.Session() as sess:
 
     # Set up the agents
     agent = DQNAgent(sess,
-                      scope='dqn' + str(i),
+                      scope='dqn',
                       action_num=env.action_num,
                       replay_memory_init_size=memory_init_size,
                       train_every=train_every,
@@ -73,10 +73,10 @@ with tf.Session() as sess:
     logger.close_files()
 
     # Plot the learning curve
-    logger.plot('DQN')
+    logger.plot('DQN_two')
 
     # Save model
-    save_dir = 'models/dqn'
+    save_dir = 'models/dqn_two'
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
     saver = tf.train.Saver()
