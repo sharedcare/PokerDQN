@@ -31,18 +31,14 @@ log_dir = './experiments/dqn_single_result/'
 # Set a global seed
 set_global_seed(0)
 
-# Initialize a global step
-global_step = tf.Variable(0, name='global_step', trainable=False)
-
 # Set up the agents
-agent = DQNAgent(sess,
-                    scope='dqn',
-                    action_num=env.action_num,
-                    replay_memory_init_size=memory_init_size,
-                    train_every=train_every,
-                    state_shape=env.state_shape,
-                    mlp_layers=[128, 128],
-                    device=torch.device('cpu'))
+agent = DQNAgent(scope='dqn',
+                action_num=env.action_num,
+                replay_memory_init_size=memory_init_size,
+                train_every=train_every,
+                state_shape=env.state_shape,
+                mlp_layers=[128, 128],
+                device=torch.device('cpu'))
 random_agent = RandomAgent(action_num=eval_env.action_num)
 
 env.set_agents([agent, random_agent])

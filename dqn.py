@@ -31,29 +31,22 @@ log_dir = './experiments/dqn_result/'
 # Set a global seed
 set_global_seed(0)
 
-# Initialize a global step
-global_step = tf.Variable(0, name='global_step', trainable=False)
-
 # Set up the agents
 agents = []
 for i in range(env.player_num):
-    agent = DQNAgent(sess,
-                        scope='dqn' + str(i),
-                        action_num=env.action_num,
-                        replay_memory_init_size=memory_init_size,
-                        train_every=train_every,
-                        state_shape=env.state_shape,
-                        mlp_layers=[128, 128],
-                        device=torch.device('cpu'))
+    agent = DQNAgent(scope='dqn' + str(i),
+                    action_num=env.action_num,
+                    replay_memory_init_size=memory_init_size,
+                    train_every=train_every,
+                    state_shape=env.state_shape,
+                    mlp_layers=[128, 128],
+                    device=torch.device('cpu'))
     agents.append(agent)
 
 random_agent = RandomAgent(action_num=eval_env.action_num)
 
 env.set_agents(agents)
 eval_env.set_agents([agents[0], random_agent])
-
-# Initialize global variables
-sess.run(tf.global_variables_initializer())
 
 # Init a Logger to plot the learning curve
 logger = Logger(log_dir)
