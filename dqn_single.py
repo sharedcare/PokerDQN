@@ -1,4 +1,4 @@
-''' An example of learning a multi Deep-Q Agent on Texas No-Limit Holdem
+''' An example of learning a single Deep-Q Agent on Texas No-Limit Holdem
 '''
 
 import torch
@@ -11,7 +11,7 @@ from rlcard.utils import set_global_seed, tournament
 from rlcard.utils import Logger
 
 # Make environment
-env = rlcard.make('no-limit-holdem', config={'seed': 0, 'num_players': 4})
+env = rlcard.make('no-limit-holdem', config={'seed': 0})
 eval_env = rlcard.make('no-limit-holdem', config={'seed': 0})
 
 # Set the iterations numbers and how frequently we evaluate the performance
@@ -26,7 +26,7 @@ memory_init_size = 1000
 train_every = 1
 
 # The paths for saving the logs and learning curves
-log_dir = './experiments/dqn_result/'
+log_dir = './experiments/dqn_single_result/'
 
 # Set a global seed
 set_global_seed(0)
@@ -35,25 +35,19 @@ set_global_seed(0)
 global_step = tf.Variable(0, name='global_step', trainable=False)
 
 # Set up the agents
-agents = []
-for i in range(env.player_num):
-    agent = DQNAgent(sess,
-                        scope='dqn' + str(i),
-                        action_num=env.action_num,
-                        replay_memory_init_size=memory_init_size,
-                        train_every=train_every,
-                        state_shape=env.state_shape,
-                        mlp_layers=[128, 128],
-                        device=torch.device('cpu'))
-    agents.append(agent)
-
+agent = DQNAgent(sess,
+                    scope='dqn',
+                    action_num=env.action_num,
+                    replay_memory_init_size=memory_init_size,
+                    train_every=train_every,
+                    state_shape=env.state_shape,
+                    mlp_layers=[128, 128],
+                    device=torch.device('cpu'))
 random_agent = RandomAgent(action_num=eval_env.action_num)
 
-env.set_agents(agents)
-eval_env.set_agents([agents[0], random_agent])
+env.set_agents([agent, random_agent])
+eval_env.set_agents([agent, random_agent])
 
-# Initialize global variables
-sess.run(tf.global_variables_initializer())
 
 # Init a Logger to plot the learning curve
 logger = Logger(log_dir)
@@ -64,9 +58,8 @@ for episode in range(episode_num):
     trajectories, _ = env.run(is_training=True)
 
     # Feed transitions into agent memory, and train the agent
-    for i in range(env.player_num):
-        for ts in trajectories[i]:
-            agents[i].feed(ts)
+    for ts in trajectories[0]:
+        agent.feed(ts)
 
     # Evaluate the performance. Play with random agents.
     if episode % evaluate_every == 0:
@@ -77,13 +70,12 @@ for episode in range(episode_num):
 logger.close_files()
 
 # Plot the learning curve
-logger.plot('DQN')
+logger.plot('DQN_single')
 
 # Save model
-save_dir = 'models/dqn'
+save_dir = 'models/dqn_single'
 if not os.path.exists(save_dir):
     os.makedirs(save_dir)
-state_dict = {}
-for agent in agents:
-    state_dict.update(agent.get_state_dict())
+state_dict = agent.get_state_dict()
+print(state_dict. keys())
 torch.save(state_dict, os.path.join(save_dir, 'model.pth'))
