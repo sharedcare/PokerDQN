@@ -1,11 +1,11 @@
 ''' An example of learning a NFSP Agent on No-Limit Texas Holdem
 '''
 
-import tensorflow as tf
+import torch
 import os
 
 import rlcard
-from rlcard.agents import NFSPAgent
+from rlcard.agents import NFSPAgentPytorch as NFSPAgent
 from rlcard.agents import RandomAgent
 from rlcard.utils import set_global_seed, tournament
 from rlcard.utils import Logger
@@ -31,65 +31,59 @@ log_dir = './experiments/nfsp_result/'
 # Set a global seed
 set_global_seed(0)
 
-with tf.Session() as sess:
+# Set up the agents
+agents = []
+# print(env.player_num)
+for i in range(env.player_num):
+    agent = NFSPAgent(scope='nfsp' + str(i),
+                        action_num=env.action_num,
+                        state_shape=env.state_shape,
+                        hidden_layers_sizes=[512, 512],
+                        anticipatory_param=0.1,
+                        min_buffer_size_to_learn=memory_init_size,
+                        q_replay_memory_init_size=memory_init_size,
+                        train_every=train_every,
+                        q_train_every=train_every,
+                        q_mlp_layers=[512, 512])
+    agents.append(agent)
+random_agent = RandomAgent(action_num=eval_env.action_num)
 
-    # Initialize a global step
-    global_step = tf.Variable(0, name='global_step', trainable=False)
+env.set_agents(agents)
+eval_env.set_agents([agents[0], random_agent])
 
-    # Set up the agents
-    agents = []
+# Init a Logger to plot the learning curve
+logger = Logger(log_dir)
+
+for episode in range(episode_num):
+
+    # First sample a policy for the episode
+    for agent in agents:
+        agent.sample_episode_policy()
+
+    # Generate data from the environment
+    trajectories, _ = env.run(is_training=True)
+
+    # Feed transitions into agent memory, and train the agent
     for i in range(env.player_num):
-        agent = NFSPAgent(sess,
-                          scope='nfsp' + str(i),
-                          action_num=env.action_num,
-                          state_shape=env.state_shape,
-                          hidden_layers_sizes=[512, 512],
-                          anticipatory_param=0.1,
-                          min_buffer_size_to_learn=memory_init_size,
-                          q_replay_memory_init_size=memory_init_size,
-                          train_every=train_every,
-                          q_train_every=train_every,
-                          q_mlp_layers=[512, 512])
-        agents.append(agent)
-    random_agent = RandomAgent(action_num=eval_env.action_num)
+        for ts in trajectories[i]:
+            agents[i].feed(ts)
 
-    env.set_agents(agents)
-    eval_env.set_agents([agents[0], random_agent])
+    # Evaluate the performance. Play with random agents.
+    if episode % evaluate_every == 0:
+        logger.log_performance(
+            env.timestep, tournament(eval_env, evaluate_num)[0])
 
-    # Initialize global variables
-    sess.run(tf.global_variables_initializer())
+# Close files in the logger
+logger.close_files()
 
-    # Init a Logger to plot the learning curve
-    logger = Logger(log_dir)
+# Plot the learning curve
+logger.plot('NFSP')
 
-    for episode in range(episode_num):
-
-        # First sample a policy for the episode
-        for agent in agents:
-            agent.sample_episode_policy()
-
-        # Generate data from the environment
-        trajectories, _ = env.run(is_training=True)
-
-        # Feed transitions into agent memory, and train the agent
-        for i in range(env.player_num):
-            for ts in trajectories[i]:
-                agents[i].feed(ts)
-
-        # Evaluate the performance. Play with random agents.
-        if episode % evaluate_every == 0:
-            logger.log_performance(
-                env.timestep, tournament(eval_env, evaluate_num)[0])
-
-    # Close files in the logger
-    logger.close_files()
-
-    # Plot the learning curve
-    logger.plot('NFSP')
-
-    # Save model
-    save_dir = 'models/nfsp'
-    if not os.path.exists(save_dir):
-        os.makedirs(save_dir)
-    saver = tf.train.Saver()
-    saver.save(sess, os.path.join(save_dir, 'model'))
+# Save model
+save_dir = 'models/nfsp'
+if not os.path.exists(save_dir):
+    os.makedirs(save_dir)
+state_dict = {}
+for agent in agents:
+    state_dict.update(agent.get_state_dict())
+torch.save(state_dict, os.path.join(save_dir, 'model.pth'))
