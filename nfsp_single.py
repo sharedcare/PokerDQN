@@ -26,7 +26,7 @@ memory_init_size = 1000
 train_every = 64
 
 # The paths for saving the logs and learning curves
-log_dir = './experiments/nfsp_single_result/'
+log_dir = './experiments/nfsp_random_result/'
 
 # Set a global seed
 set_global_seed(0)

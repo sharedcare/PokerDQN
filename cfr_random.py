@@ -32,7 +32,7 @@ log_dir = './experiments/cfr_random_result/'
 set_global_seed(0)
 
 # Set up the agents
-agent = CFRAgent(env=env)
+agent = CFRAgent(env=env, model_path='./cfr_random_model')
 random_agent = RandomAgent(action_num=eval_env.action_num)
 
 env.set_agents([agent, random_agent])
