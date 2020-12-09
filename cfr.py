@@ -1,7 +1,6 @@
 ''' An example of learning a CFR Agent on No-Limit Texas Holdem
 '''
 
-import tensorflow as tf
 import os
 
 import rlcard
@@ -11,20 +10,20 @@ from rlcard.utils import set_global_seed, tournament
 from rlcard.utils import Logger
 
 # Make environment
-env = rlcard.make('no-limit-holdem',
+env = rlcard.make('leduc-holdem',
                   config={'seed': 0, 'allow_step_back': True})
-eval_env = rlcard.make('no-limit-holdem', config={'seed': 0})
+eval_env = rlcard.make('leduc-holdem', config={'seed': 0})
 
 # Set the iterations numbers and how frequently we evaluate the performance
-evaluate_every = 1
-evaluate_num = 100
+evaluate_every = 100
+evaluate_num = 1000
 episode_num = 100000
 
 # The intial memory size
 memory_init_size = 1000
 
 # Train the agent every X steps
-train_every = 64
+train_every = 1
 
 # The paths for saving the logs and learning curves
 log_dir = './experiments/cfr_result/'
