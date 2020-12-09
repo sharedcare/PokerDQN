@@ -32,7 +32,7 @@ log_dir = './experiments/nfsp_single_result/'
 set_global_seed(0)
 
 # Set up the agents
-agents = []
+# agents = []
 # print(env.player_num)
 agent = NFSPAgent(scope='nfsp',
                         action_num=env.action_num,
@@ -55,8 +55,7 @@ logger = Logger(log_dir)
 for episode in range(episode_num):
 
     # First sample a policy for the episode
-    for agent in agents:
-        agent.sample_episode_policy()
+    agent.sample_episode_policy()
 
     # Generate data from the environment
     trajectories, _ = env.run(is_training=True)
